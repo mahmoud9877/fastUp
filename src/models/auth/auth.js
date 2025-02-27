@@ -41,11 +41,15 @@ export const login = asyncHandler(async (req, res, next) => {
   }
 
   console.log({ phone, password });
-  console.log({ phone, password });
 
   console.log("Comparing:", password, user.password);
-  const isMatch = await compare(password, user.password);
+  const isMatch = await compare(password, user.password); // Ensure compare is implemented correctly
   console.log("Comparison result:", isMatch);
+
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid password" });
+  }
+
   const token = generateToken({ id: user._id, role: user.role });
 
   return res.status(200).json({ message: "Login successful", token });
