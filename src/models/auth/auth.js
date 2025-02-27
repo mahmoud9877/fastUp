@@ -2,7 +2,6 @@ import User from "../../../DB/models/userModel.js";
 import asyncHandler from "express-async-handler";
 import { generateToken } from "../../utils/GenerateAndVerifyToken.js";
 import { hash, compare } from "../../utils/HashAndCompare.js";
-import bcrypt from "bcryptjs";
 
 export const createAdmin = asyncHandler(async (req, res) => {
   try {
@@ -50,7 +49,7 @@ export const login = asyncHandler(async (req, res, next) => {
 
   console.log("Stored password:", user.password);
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = compare({ plaintext: password, hashValue: user.password });
   console.log("Password match result:", isMatch);
 
   if (!isMatch) {
