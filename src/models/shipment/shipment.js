@@ -2,59 +2,57 @@ import Shipment from "../../../DB/models/shipmentModel.js";
 import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
 
-export const addShipment = asyncHandler(async (req, res) => {
-  const {
-    startLocation,
-    shipmentItems,
-    endLocation,
-    assignedDriver,
-    shippingAddress,
-    paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  } = req.body;
+export const addShipment = asyncHandler(async (req, res, next) => {
+  try {
+    const {
+      startLocation,
+      shipmentItems,
+      endLocation,
+      assignedDriver,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+    } = req.body;
 
-  console.log({
-    startLocation,
-    shipmentItems,
-    endLocation,
-    assignedDriver,
-    shippingAddress,
-    paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  });
+    console.log({ startLocation, shipmentItems, endLocation });
 
-  // ✅ Ensure shipment items exist
-  if (!shipmentItems || shipmentItems.length === 0) {
-    return res.status(400).json({ message: "No shipment items" });
+    if (!shipmentItems || shipmentItems.length === 0) {
+      return res.status(400).json({ message: "No shipment items" });
+    }
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    if (!startLocation || !endLocation || !shippingAddress || !paymentMethod) {
+      return res
+        .status(400)
+        .json({ message: "Missing required shipment details" });
+    }
+
+    const shipment = await Shipment.create({
+      startLocation,
+      shipmentItems,
+      endLocation,
+      assignedDriver,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      user: req.user._id, // ✅ Store user ID for tracking
+    });
+
+    res
+      .status(201)
+      .json({ message: "Shipment created successfully", shipment });
+  } catch (error) {
+    next(error); // ✅ Pass errors to global error handler
   }
-
-  // ✅ Ensure user is authenticated
-  if (!req.user || !req.user._id) {
-    return res.status(401).json({ message: "User not authenticated" });
-  }
-
-  // ✅ Create and save shipment
-  const shipment = await Shipment.create({
-    startLocation,
-    shipmentItems,
-    endLocation,
-    assignedDriver,
-    shippingAddress,
-    paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  });
-
-  const createdShipment = await shipment.save();
-  res.status(201).json(createdShipment);
 });
 
 export const editShipment = asyncHandler(async (req, res) => {
