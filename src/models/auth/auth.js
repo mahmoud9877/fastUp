@@ -65,6 +65,9 @@ export const login = asyncHandler(async (req, res, next) => {
     console.error("TOKEN_SIGNATURE is missing from environment variables");
     return res.status(500).json({ message: "Internal server error" });
   }
+  if (!user._id || !user.role) {
+    return res.status(500).json({ message: "User data is incomplete" });
+  }
 
   // Generate token
   const token = generateToken({ payload: { id: user._id, role: user.role } });
