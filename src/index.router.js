@@ -38,7 +38,7 @@ const initApp = (app, express) => {
   app.use("/shipment", shipmentRouter);
 
   // ✅ Testing API
-  app.get("/test", (req, res) => {
+  app.get("/", (req, res) => {
     res.status(200).json({ success: true, message: "API is working" });
   });
 
