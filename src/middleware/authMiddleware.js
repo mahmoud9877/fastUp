@@ -28,14 +28,14 @@ export const auth = (accessRoles = []) => {
       token,
       signature: process.env.TOKEN_SIGNATURE,
     });
+    console.log(decoded);
+
     if (!decoded?.id) {
       return next(new Error("Invalid payload token", { cause: 404 }));
     }
 
     // ✅ Fetch user from DB
-    const user = await User.findById(decoded.id).select(
-      "userName email image role status"
-    );
+    const user = await User.findById(decoded.id).select("phone");
     if (!user) {
       return next(new Error("Not registered account", { cause: 401 }));
     }
