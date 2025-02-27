@@ -2,6 +2,7 @@ import User from "../../../DB/models/userModel.js";
 import asyncHandler from "express-async-handler";
 import { generateToken } from "../../utils/GenerateAndVerifyToken.js";
 import { hash, compare } from "../../utils/HashAndCompare.js";
+import bcrypt from "bcryptjs";
 
 export const createAdmin = asyncHandler(async (req, res) => {
   try {
@@ -35,19 +36,25 @@ export const getAllAdmins = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res, next) => {
   const { phone, password } = req.body;
 
-  const user = await User.findOne({ phone });
+  console.log("Received phone:", phone);
+  console.log("Received password:", password);
+
+  if (!phone || !password) {
+    return res.status(400).json({ message: "Phone and password are required" });
+  }
+
+  const user = await User.findOne({ phone }).select("+password");
   if (!user) {
     return res.status(404).json({ message: "Invalid phone" });
   }
 
-  console.log({ phone, password });
+  console.log("Stored password:", user.password);
 
-  console.log("Comparing:", password, user.password);
-  const isMatch = await compare(password, user.password); // Ensure compare is implemented correctly
-  console.log("Comparison result:", isMatch);
+  const isMatch = await bcrypt.compare(password, user.password);
+  console.log("Password match result:", isMatch);
 
   if (!isMatch) {
-    return res.status(401).json({ message: "Invalid password" });
+    return res.status(401).json({ message: "Invalid login credentials" });
   }
 
   const token = generateToken({ id: user._id, role: user.role });
