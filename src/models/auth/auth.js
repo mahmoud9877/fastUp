@@ -36,27 +36,38 @@ export const login = asyncHandler(async (req, res, next) => {
   const { phone, password } = req.body;
 
   console.log("Received phone:", phone);
-  console.log("Received password:", password);
 
   if (!phone || !password) {
     return res.status(400).json({ message: "Phone and password are required" });
   }
 
+  // Find user and explicitly select password
   const user = await User.findOne({ phone }).select("+password");
   if (!user) {
     return res.status(404).json({ message: "Invalid phone" });
   }
 
-  console.log("Stored password:", user.password);
+  console.log("Stored hashed password:", user.password);
 
-  const isMatch = compare({ plaintext: password, hashValue: user.password });
+  // Compare passwords (assuming compare() is async)
+  const isMatch = await compare({
+    plaintext: password,
+    hashValue: user.password,
+  });
   console.log("Password match result:", isMatch);
 
   if (!isMatch) {
     return res.status(401).json({ message: "Invalid login credentials" });
   }
 
-  const token = generateToken({ id: user._id, role: user.role });
+  // Ensure token signature is set
+  if (!process.env.TOKEN_SIGNATURE) {
+    console.error("TOKEN_SIGNATURE is missing from environment variables");
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+  // Generate token
+  const token = generateToken({ payload: { id: user._id, role: user.role } });
 
   return res.status(200).json({ message: "Login successful", token });
 });
