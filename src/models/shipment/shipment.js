@@ -238,7 +238,6 @@ export const addInspectionStatus = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const updateUserInspectionStatus = asyncHandler(async (req, res) => {
   const { shipmentId } = req.params;
   const { userInspectionStatus } = req.body; // Example: "pending" or "completed"
