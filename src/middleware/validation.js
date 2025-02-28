@@ -10,26 +10,28 @@ const validateObjectId = (value, helper) => {
 
 // General field definitions using Joi
 export const generalFields = {
-  nationalId: Joi.string().length(14).required().messages({
-    "string.length": "National ID must be exactly 14 characters.",
-  }),
-  password: Joi.string()
-    .pattern(new RegExp(/^\d{8}$/))
-    .required()
-    .messages({
-      "string.pattern.base":
-        "Password must contain at least 8 characters, including uppercase, lowercase, and numbers.",
-    }),
   phone: Joi.string()
-    .pattern(/^\d{10,15}$/) // Allow phone numbers between 10-15 digits
+    .pattern(/^\d{10,15}$/) // أرقام فقط بين 10 و 15 رقمًا
     .required()
     .messages({
       "string.pattern.base": "Phone number must be 10-15 digits.",
     }),
 
+  nationalId: Joi.string().min(8).required().messages({
+    "string.pattern.base": "National ID must be exactly 14 numeric digits.",
+  }),
+
+  password: Joi.string()
+    // .pattern(/^\d{8}$/) // يجب أن تكون 8 أرقام فقط
+    .required()
+    .messages({
+      "string.pattern.base": "Password must be exactly 8 numeric digits.",
+    }),
+
   cPassword: Joi.string().valid(Joi.ref("password")).required().messages({
     "any.only": "Passwords must match",
   }),
+
   id: Joi.string().custom(validateObjectId).required().messages({
     "any.custom": "Invalid ObjectId format",
   }),

@@ -10,7 +10,11 @@ router.post(
   validation(validators.createAdmin),
   authController.createAdmin
 );
-router.post("/login", validation(validators.login), authController.login);
+
+router.post("/login", 
+validation(validators.login), 
+authController.login);
+
 router.post(
   "/change_password",
   auth(roles.Admin),

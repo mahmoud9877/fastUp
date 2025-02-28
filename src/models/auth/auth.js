@@ -36,7 +36,7 @@ export const getAllAdmins = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res, next) => {
   const { phone, password } = req.body;
 
-  console.log("Received phone:", phone);
+  console.log("Received phone232323:", phone, password);
 
   if (!phone || !password) {
     return res.status(400).json({ message: "Phone and password are required" });
