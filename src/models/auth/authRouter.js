@@ -18,5 +18,7 @@ router.post(
 );
 
 router.get("/all_admins", authController.getAllAdmins);
+router.post("/send-reset-code", authController.sendResetCode); // Step 1: Send OTP
+router.post("/reset-password", authController.resetPassword);
 
 export default router;

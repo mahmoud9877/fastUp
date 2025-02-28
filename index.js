@@ -16,7 +16,7 @@ const app = express();
 
 // Initialize routes and middleware
 initApp(app, express);
-console.log('kldsjflkdf;skldjfd;lkjsdkflj');
+console.log("kldsjflkdf;skldjfd;lkjsdkflj");
 
 // Setup port
 const port = process.env.PORT || 5000;

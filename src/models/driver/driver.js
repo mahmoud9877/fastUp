@@ -98,31 +98,52 @@ export const getDriverById = asyncHandler(async (req, res) => {
 });
 
 export const editProfile = asyncHandler(async (req, res, next) => {
-  try {
-    const { DriverName, TruckNo, IDNo, phone } = req.body;
+  const { driverName, truckNumber, nationalId, password, phone } = req.body;
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return next(new asyncHandler("User not found.", 404));
-    }
-
-    if (DriverName) user.DriverName = DriverName;
-    if (TruckNo) user.TruckNo = TruckNo;
-    if (phone) user.phone = phone;
-    if (IDNo) user.IDNo = IDNo;
-
-    const token = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
-      process.env.JWT_SECRET
-    );
-    await user.save();
-
-    res
-      .status(200)
-      .json({ message: "Profile updated successfully.", user, token });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+  // Ensure user is authenticated
+  if (!req.user || !req.user.id) {
+    return next(new Error("Unauthorized access", { cause: 401 }));
   }
+
+  // Find the user
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return next(new Error("User not found.", { cause: 404 }));
+  }
+
+  // Update fields
+  if (driverName) user.driverName = driverName;
+  if (truckNumber) user.truckNumber = truckNumber;
+  if (phone) user.phone = phone;
+  if (nationalId) user.nationalId = nationalId;
+
+  // Hash new password if provided
+  if (password) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+  }
+
+  await user.save();
+
+  // Generate new token with expiration
+  const token = jwt.sign(
+    { id: user._id, isAdmin: user.isAdmin },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  res.status(200).json({
+    message: "Profile updated successfully.",
+    user: {
+      _id: user._id,
+      driverName: user.driverName,
+      truckNumber: user.truckNumber,
+      phone: user.phone,
+      nationalId: user.nationalId,
+      isAdmin: user.isAdmin,
+    },
+    token,
+  });
 });
 
 export const getAllDrivers = asyncHandler(async (req, res) => {

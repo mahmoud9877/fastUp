@@ -21,6 +21,8 @@ const shipmentSchema = new mongoose.Schema({
     enum: ["passed", "failed"],
     default: "pending",
   },
+  comment: { type: String },
+
   inspectionNotes: { type: String },
   userInspectionStatus: {
     type: String,

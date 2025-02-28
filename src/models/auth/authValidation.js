@@ -23,14 +23,17 @@ export const login = joi
   })
   .required();
 
-// export const forgetPassword = joi
-//   .object({
-//     email: generalFields.email,
-//     password: generalFields.password,
-//     cPassword: generalFields.cPassword,
-//     code: joi
-//       .string()
-//       .pattern(new RegExp(/^\d{4}$/))
-//       .required(),
-//   })
-//   .required();
+export const changePassword = joi.object({
+  oldPassword: generalFields.password.required(),
+  newPassword: generalFields.password.required(),
+});
+
+export const forgetPassword = joi.object({
+  phone: generalFields.phone,
+  password: generalFields.password,
+  cPassword: generalFields.cPassword,
+  code: joi
+    .string()
+    .pattern(new RegExp(/^\d{4}$/))
+    .required(),
+});

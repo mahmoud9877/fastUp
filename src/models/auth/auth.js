@@ -2,6 +2,7 @@ import User from "../../../DB/models/userModel.js";
 import asyncHandler from "express-async-handler";
 import { generateToken } from "../../utils/GenerateAndVerifyToken.js";
 import { hash, compare } from "../../utils/HashAndCompare.js";
+import { generateCode, sendSMS } from "../../utils/OTP.js";
 
 export const createAdmin = asyncHandler(async (req, res) => {
   try {
@@ -110,4 +111,71 @@ export const changePassword = asyncHandler(async (req, res, next) => {
     console.error("Error changing password:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
+});
+
+// Temporary OTP store (Use Redis in production)
+const otpStore = new Map();
+
+// ✅ 1️⃣ Send OTP Code
+export const sendResetCode = asyncHandler(async (req, res) => {
+  const { phone } = req.body;
+
+  // Validate phone
+  const phoneSchema = Joi.object({
+    phone: Joi.string()
+      .pattern(new RegExp(/^(\+?\d{10,15})$/))
+      .required(),
+  });
+
+  const { error } = phoneSchema.validate({ phone });
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  // Check if user exists
+  const user = await User.findOne({ phone });
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  // Generate OTP
+  const otpCode = generateCode();
+  otpStore.set(phone, otpCode); // Store OTP
+
+  // Send OTP via SMS
+  await sendSMS(phone, `Your password reset code is: ${otpCode}`);
+
+  res.status(200).json({ message: "Reset code sent successfully" });
+});
+
+// ✅ 2️⃣ Reset Password
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { phone, code, password, cPassword } = req.body;
+
+  // Validate input
+  const schema = Joi.object({
+    phone: Joi.string()
+      .pattern(new RegExp(/^(\+?\d{10,15})$/))
+      .required(),
+    code: Joi.string()
+      .pattern(new RegExp(/^\d{4}$/))
+      .required(),
+    password: Joi.string().min(6).max(30).required(),
+    cPassword: Joi.string().valid(Joi.ref("password")).required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  // Verify OTP
+  if (otpStore.get(phone) !== code) {
+    return res.status(400).json({ message: "Invalid or expired code" });
+  }
+
+  // Hash new password
+  const hashedPassword = hash({ plaintext: password });
+
+  // Update password
+  await User.findOneAndUpdate({ phone }, { password: hashedPassword });
+
+  // Clear OTP
+  otpStore.delete(phone);
+
+  res.status(200).json({ message: "Password reset successfully" });
 });

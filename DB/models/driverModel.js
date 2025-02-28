@@ -31,7 +31,6 @@ const driverSchema = new mongoose.Schema({
     type: String,
     default: "Driver",
   },
-  comment: { type: String },
 
   createdAt: {
     type: Date,

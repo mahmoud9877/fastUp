@@ -17,6 +17,5 @@ export const compare = ({ plaintext, hashValue } = {}) => {
       "Both plaintext and hashValue are required for password comparison"
     );
   }
-
   return bcrypt.compareSync(plaintext, hashValue);
 };
