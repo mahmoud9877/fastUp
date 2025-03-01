@@ -72,6 +72,7 @@ export const login = asyncHandler(async (req, res, next) => {
 
   // Generate token
   const token = generateToken({ payload: { id: user._id, role: user.role } });
+  console.log(token);
 
   return res.status(200).json({ message: "Login successful", token });
 });

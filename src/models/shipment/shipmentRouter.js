@@ -39,7 +39,7 @@ router.get(
 // Upload a policy image (Requires Multer)
 router.put(
   "/addPolicy/:shipmentId",
-  upload.single("policyImage"),
+  upload.single("uploads"),
   shipmentController.updatePolicyImage
 );
 
