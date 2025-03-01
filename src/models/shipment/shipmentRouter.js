@@ -1,7 +1,7 @@
 import express from "express";
 import { auth, roles } from "../../middleware/authMiddleware.js";
 import * as shipmentController from "./shipment.js";
-import upload from "../../utils/multer.js";
+// import upload from "../../utils/multer.js";
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.get(
 // Upload a policy image (Requires Multer)
 router.put(
   "/addPolicy/:shipmentId",
-  upload.single("uploads"),
+  // upload.single("uploads"),
   shipmentController.updatePolicyImage
 );
 
